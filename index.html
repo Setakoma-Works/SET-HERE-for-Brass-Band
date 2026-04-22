@@ -115,7 +115,8 @@
     // --- メインアプリ ---
     function App() {
       const [items, setItems] = useState([]);
-      const [selectedId, setSelectedId] = useState(null);
+      const [selectedIds, setSelectedIds] = useState([]);
+      const [selectionBox, setSelectionBox] = useState(null);
       const [isPrinting, setIsPrinting] = useState(false);
       const [activeTab, setActiveTab] = useState('stage');
       
@@ -125,7 +126,7 @@
       const [showGrid, setShowGrid] = useState(true);
 
       const stageRef = useRef(null);
-      const dragState = useRef({ isDragging: false, id: null, offsetX: 0, offsetY: 0 });
+      const dragState = useRef({ type: null, startMouseX: 0, startMouseY: 0, items: [] });
 
       useEffect(() => {
         setItems([...STANDARD_LAYOUT]);
@@ -140,13 +141,13 @@
           rotation: 0,
         };
         setItems([...items, newItem]);
-        setSelectedId(newItem.id);
+        setSelectedIds([newItem.id]);
       };
 
       const handleClearStage = () => {
         if (window.confirm('ステージをすべてクリアしますか？')) {
           setItems([]);
-          setSelectedId(null);
+          setSelectedIds([]);
         }
       };
 
@@ -156,79 +157,128 @@
           setStageFrontWidth(12.0);
           setStageBackWidth(8.0);
           setStageDepth(8.0);
-          setSelectedId(null);
+          setSelectedIds([]);
         }
       };
 
+      // マウス/タッチのステージ上座標を取得
+      const getMouseCoords = (e) => {
+        const stageRect = stageRef.current.getBoundingClientRect();
+        const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY ?? (e.touches && e.touches[0].clientY);
+        return { x: clientX - stageRect.left, y: clientY - stageRect.top };
+      };
+
+      // アイテムをドラッグ（単一・複数）開始
       const startDrag = (e, id) => {
         if (isPrinting) return;
         e.stopPropagation();
-        setSelectedId(id);
         
-        const item = items.find((i) => i.id === id);
-        if (!item || !stageRef.current) return;
+        let newSelectedIds = selectedIds;
+        // クリックしたアイテムが選択中でなければ、そのアイテムだけを選択状態にする（Shiftキーで追加も可能）
+        if (!selectedIds.includes(id)) {
+          newSelectedIds = e.shiftKey ? [...selectedIds, id] : [id];
+          setSelectedIds(newSelectedIds);
+        }
 
-        const stageRect = stageRef.current.getBoundingClientRect();
-        // マウスとタッチ両対応
-        const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY ?? (e.touches && e.touches[0].clientY);
+        const coords = getMouseCoords(e);
+        const dragItems = items
+          .filter(i => newSelectedIds.includes(i.id))
+          .map(i => ({ id: i.id, startX: i.x, startY: i.y }));
 
         dragState.current = {
-          isDragging: true,
-          id: id,
-          offsetX: clientX - stageRect.left - item.x,
-          offsetY: clientY - stageRect.top - item.y,
+          type: 'item',
+          startMouseX: coords.x,
+          startMouseY: coords.y,
+          items: dragItems
         };
       };
 
-      const onDrag = (e) => {
-        if (!dragState.current.isDragging || isPrinting) return;
+      // ステージ上でドラッグ開始（範囲選択枠の作成）
+      const handleStageMouseDown = (e) => {
+        if (isPrinting) return;
+        const coords = getMouseCoords(e);
         
-        const stageRect = stageRef.current.getBoundingClientRect();
-        const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY ?? (e.touches && e.touches[0].clientY);
+        if (!e.shiftKey) {
+          setSelectedIds([]);
+        }
 
-        let newX = clientX - stageRect.left - dragState.current.offsetX;
-        let newY = clientY - stageRect.top - dragState.current.offsetY;
+        dragState.current = {
+          type: 'selection',
+          startMouseX: coords.x,
+          startMouseY: coords.y,
+          items: []
+        };
+        setSelectionBox({ x: coords.x, y: coords.y, w: 0, h: 0 });
+      };
 
-        setItems((prev) =>
-          prev.map((item) =>
-            item.id === dragState.current.id ? { ...item, x: newX, y: newY } : item
-          )
-        );
+      const onDrag = (e) => {
+        if (!dragState.current.type || isPrinting) return;
+        const coords = getMouseCoords(e);
+
+        if (dragState.current.type === 'item') {
+          // アイテムの移動
+          const deltaX = coords.x - dragState.current.startMouseX;
+          const deltaY = coords.y - dragState.current.startMouseY;
+
+          setItems((prev) =>
+            prev.map((item) => {
+              const dragItem = dragState.current.items.find(i => i.id === item.id);
+              if (dragItem) {
+                return { ...item, x: dragItem.startX + deltaX, y: dragItem.startY + deltaY };
+              }
+              return item;
+            })
+          );
+        } else if (dragState.current.type === 'selection') {
+          // 範囲選択ボックスの描画とアイテムの選択
+          const startX = dragState.current.startMouseX;
+          const startY = dragState.current.startMouseY;
+          const x = Math.min(startX, coords.x);
+          const y = Math.min(startY, coords.y);
+          const w = Math.abs(coords.x - startX);
+          const h = Math.abs(coords.y - startY);
+          
+          setSelectionBox({ x, y, w, h });
+          
+          const newlySelected = items.filter(item => {
+            const cx = item.x + item.width / 2;
+            const cy = item.y + item.height / 2;
+            return cx >= x && cx <= x + w && cy >= y && cy <= y + h;
+          }).map(i => i.id);
+          
+          setSelectedIds(newlySelected);
+        }
       };
 
       const stopDrag = () => {
-        dragState.current.isDragging = false;
-      };
-
-      const handleStageClick = () => {
-        setSelectedId(null);
+        dragState.current = { type: null, startMouseX: 0, startMouseY: 0, items: [] };
+        setSelectionBox(null);
       };
 
       const updateSelectedItem = (key, value) => {
-        setItems((prev) =>
-          prev.map((item) =>
-            item.id === selectedId ? { ...item, [key]: value } : item
-          )
-        );
+        if (selectedIds.length === 1) {
+          setItems((prev) =>
+            prev.map((item) =>
+              item.id === selectedIds[0] ? { ...item, [key]: value } : item
+            )
+          );
+        }
       };
 
-      const deleteSelectedItem = () => {
-        setItems((prev) => prev.filter((item) => item.id !== selectedId));
-        setSelectedId(null);
+      const deleteSelectedItems = () => {
+        setItems((prev) => prev.filter((item) => !selectedIds.includes(item.id)));
+        setSelectedIds([]);
       };
 
       const handlePrint = () => {
-        setSelectedId(null);
+        setSelectedIds([]);
         setIsPrinting(true);
         setTimeout(() => {
           window.print();
           setIsPrinting(false);
         }, 300);
       };
-
-      const selectedItem = items.find((i) => i.id === selectedId);
 
       const maxWidthPx = Math.max(stageFrontWidth, stageBackWidth) * PPM;
       const depthPx = stageDepth * PPM;
@@ -240,6 +290,7 @@
       const bottomLeftPct = (diffFront / 2 / maxWidthPx) * 100;
       const bottomRightPct = 100 - bottomLeftPct;
       const clipPathValue = `polygon(${topLeftPct}% 0%, ${topRightPct}% 0%, ${bottomRightPct}% 100%, ${bottomLeftPct}% 100%)`;
+      const stagePolygonPoints = `${maxWidthPx * topLeftPct / 100},0 ${maxWidthPx * topRightPct / 100},0 ${maxWidthPx * bottomRightPct / 100},${depthPx} ${maxWidthPx * bottomLeftPct / 100},${depthPx}`;
 
       return (
         <div className="flex flex-col h-full bg-gray-50 font-sans text-gray-900">
@@ -365,7 +416,7 @@
                   <div className="mt-4 p-3 bg-blue-50 text-blue-800 rounded-md text-xs leading-relaxed border border-blue-100">
                     <p className="font-bold mb-1 flex items-center gap-1"><Info className="w-4 h-4"/> 使い方</p>
                     <ul className="list-disc pl-4 space-y-1">
-                      <li>左のボタンからアイテムを配置し、ドラッグで移動。</li>
+                      <li><strong>ドラッグ</strong>で範囲選択・一括移動。</li>
                       <li>選択後、右のパネルでパート名や向きを編集。</li>
                       <li>椅子の図は、マゼンタの曲線部分が「背もたれ」です。</li>
                     </ul>
@@ -388,8 +439,8 @@
                 ref={stageRef}
                 className={`relative flex-shrink-0 ${isPrinting ? 'scale-100 origin-top-left' : ''}`}
                 style={{ width: `${maxWidthPx}px`, height: `${depthPx}px` }}
-                onMouseDown={handleStageClick}
-                onTouchStart={handleStageClick}
+                onMouseDown={handleStageMouseDown}
+                onTouchStart={handleStageMouseDown}
               >
                 {/* ステージ背景（台形クリップパス） */}
                 <div className="absolute inset-0" style={{ filter: isPrinting ? 'none' : 'drop-shadow(0 10px 15px rgba(0,0,0,0.1))' }}>
@@ -404,9 +455,27 @@
                   ></div>
                 </div>
 
-                <div className="absolute bottom-0 w-full text-center py-2 text-gray-400 font-bold tracking-widest border-t-2 border-dashed border-gray-300 select-none z-10" style={{ left: `${bottomLeftPct}%`, width: `${bottomRightPct - bottomLeftPct}%` }}>
+                {/* ステージ枠線（印刷時は濃く、編集中は薄く表示される） */}
+                <svg className="absolute inset-0 pointer-events-none z-10" style={{ width: '100%', height: '100%' }}>
+                  <polygon 
+                    points={stagePolygonPoints} 
+                    fill="none" 
+                    stroke={isPrinting ? "#333" : "#cbd5e1"} 
+                    strokeWidth={isPrinting ? "3" : "2"} 
+                  />
+                </svg>
+
+                <div className="absolute bottom-0 w-full text-center py-2 text-gray-400 font-bold tracking-widest select-none z-10" style={{ left: `${bottomLeftPct}%`, width: `${bottomRightPct - bottomLeftPct}%` }}>
                   AUDIENCE (客席)
                 </div>
+
+                {/* 範囲選択ボックスの描画 */}
+                {selectionBox && (
+                  <div 
+                    className="absolute border border-blue-500 bg-blue-500/20 z-40 pointer-events-none"
+                    style={{ left: selectionBox.x, top: selectionBox.y, width: selectionBox.w, height: selectionBox.h }}
+                  ></div>
+                )}
 
                 {items.map((item) => (
                   <div
@@ -414,7 +483,7 @@
                     onMouseDown={(e) => startDrag(e, item.id)}
                     onTouchStart={(e) => startDrag(e, item.id)}
                     className={`absolute cursor-move select-none flex items-center justify-center transition-shadow
-                      ${selectedId === item.id && !isPrinting ? 'ring-2 ring-blue-500 ring-offset-2 z-50' : 'z-20 hover:drop-shadow-md'}
+                      ${selectedIds.includes(item.id) && !isPrinting ? 'ring-2 ring-blue-500 ring-offset-2 z-50' : 'z-20 hover:drop-shadow-md'}
                     `}
                     style={{ left: item.x, top: item.y, width: item.width, height: item.height, transform: `rotate(${item.rotation}deg)`, transformOrigin: 'center center' }}
                   >
@@ -626,49 +695,67 @@
                   <h2 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider border-b pb-2">
                     選択中のアイテム
                   </h2>
-                  {selectedItem ? (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">パート名 / 表示名</label>
-                        <input type="text" value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                      </div>
+                  
+                  {selectedIds.length === 1 ? (() => {
+                    const selectedItem = items.find((i) => i.id === selectedIds[0]);
+                    if (!selectedItem) return null;
+                    return (
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-700 mb-1">パート名 / 表示名</label>
+                          <input type="text" value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        </div>
 
-                      {selectedItem.type === 'mallet' && (
-                        <div className="pt-2 border-t border-gray-100">
-                          <h3 className="text-[11px] font-bold text-blue-600 mb-2">サイズ調整 (鍵盤打楽器)</h3>
-                          <div className="space-y-3 bg-blue-50/50 p-2 rounded border border-blue-100">
-                            <div>
-                              <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>横幅</span><span>{selectedItem.width}px</span></div>
-                              <input type="range" min="40" max="150" step="5" value={selectedItem.width} onChange={(e) => updateSelectedItem('width', parseInt(e.target.value))} className="w-full accent-blue-500" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>奥行き</span><span>{selectedItem.height}px</span></div>
-                              <input type="range" min="15" max="80" step="5" value={selectedItem.height} onChange={(e) => updateSelectedItem('height', parseInt(e.target.value))} className="w-full accent-blue-500" />
+                        {selectedItem.type === 'mallet' && (
+                          <div className="pt-2 border-t border-gray-100">
+                            <h3 className="text-[11px] font-bold text-blue-600 mb-2">サイズ調整 (鍵盤打楽器)</h3>
+                            <div className="space-y-3 bg-blue-50/50 p-2 rounded border border-blue-100">
+                              <div>
+                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>横幅</span><span>{selectedItem.width}px</span></div>
+                                <input type="range" min="40" max="150" step="5" value={selectedItem.width} onChange={(e) => updateSelectedItem('width', parseInt(e.target.value))} className="w-full accent-blue-500" />
+                              </div>
+                              <div>
+                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>奥行き</span><span>{selectedItem.height}px</span></div>
+                                <input type="range" min="15" max="80" step="5" value={selectedItem.height} onChange={(e) => updateSelectedItem('height', parseInt(e.target.value))} className="w-full accent-blue-500" />
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      <div>
-                        <div className="flex justify-between mb-1"><label className="block text-xs font-bold text-gray-700">向き (角度: {selectedItem.rotation}°)</label></div>
-                        <input type="range" min="-180" max="180" step="5" value={selectedItem.rotation} onChange={(e) => updateSelectedItem('rotation', parseInt(e.target.value))} className="w-full" />
-                        <div className="flex justify-between text-xs text-gray-400 mt-1"><span>左回</span><span>正面</span><span>右回</span></div>
-                        <div className="grid grid-cols-4 gap-1 mt-2">
-                          {[-90, 0, 90, 180].map(deg => (
-                            <button key={deg} onClick={() => updateSelectedItem('rotation', deg)} className="px-1 py-1 bg-gray-100 hover:bg-gray-200 rounded text-[10px] text-gray-600">{deg}°</button>
-                          ))}
+                        <div>
+                          <div className="flex justify-between mb-1"><label className="block text-xs font-bold text-gray-700">向き (角度: {selectedItem.rotation}°)</label></div>
+                          <input type="range" min="-180" max="180" step="5" value={selectedItem.rotation} onChange={(e) => updateSelectedItem('rotation', parseInt(e.target.value))} className="w-full" />
+                          <div className="flex justify-between text-xs text-gray-400 mt-1"><span>左回</span><span>正面</span><span>右回</span></div>
+                          <div className="grid grid-cols-4 gap-1 mt-2">
+                            {[-90, 0, 90, 180].map(deg => (
+                              <button key={deg} onClick={() => updateSelectedItem('rotation', deg)} className="px-1 py-1 bg-gray-100 hover:bg-gray-200 rounded text-[10px] text-gray-600">{deg}°</button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100">
+                          <button onClick={deleteSelectedItems} className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded text-sm font-bold flex items-center justify-center gap-2 transition">
+                            <Trash2 className="w-4 h-4" /> このアイテムを削除
+                          </button>
                         </div>
                       </div>
-
+                    );
+                  })() : selectedIds.length > 1 ? (
+                    <div className="space-y-4">
+                      <div className="text-center py-6 bg-blue-50 rounded border border-blue-100">
+                        <span className="text-2xl font-bold text-blue-600">{selectedIds.length}</span>
+                        <span className="text-sm text-blue-800 ml-1">個のアイテムを選択中</span>
+                        <p className="text-xs text-blue-500 mt-1">ドラッグでまとめて移動できます</p>
+                      </div>
                       <div className="pt-4 border-t border-gray-100">
-                        <button onClick={deleteSelectedItem} className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded text-sm font-bold flex items-center justify-center gap-2 transition">
-                          <Trash2 className="w-4 h-4" /> このアイテムを削除
+                        <button onClick={deleteSelectedItems} className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded text-sm font-bold flex items-center justify-center gap-2 transition">
+                          <Trash2 className="w-4 h-4" /> 選択アイテムをまとめて削除
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="text-sm text-gray-400 text-center py-10 bg-gray-50 rounded border border-dashed border-gray-200">
-                      ステージ上のアイテムを<br/>クリックして選択してください
+                      ステージ上のアイテムを<br/>クリックまたは<br/>ドラッグで範囲選択してください
                     </div>
                   )}
                 </div>
