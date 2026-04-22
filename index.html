@@ -38,16 +38,115 @@
     const Printer = ({className}) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>);
     const Plus = ({className}) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>);
     const Info = ({className}) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>);
+    const UndoIcon = ({className}) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>);
+    const RedoIcon = ({className}) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>);
+    const Globe = ({className}) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>);
+
+    // --- 多言語辞書 ---
+    const dict = {
+      ja: {
+        subtitle: "実寸スケール(1m=90px)での配置・ステージサイズ調整",
+        loadStandard: "標準配置をロード",
+        clear: "クリア",
+        print: "印刷 / PDF保存",
+        tabStage: "ステージ",
+        tabChairs: "椅子/譜面台",
+        tabPercussion: "打楽器",
+        stageDesc: "ステージの広さを0.5m単位で設定できます。",
+        frontWidth: "間口 (手前の幅)",
+        depth: "奥行き",
+        backWidth: "背面幅",
+        showGrid: "1m単位のグリッド線を表示",
+        currentItems: "現在のステージ配置数",
+        chairs: "椅子",
+        stands: "譜面台",
+        unitChair: "脚",
+        unitStand: "台",
+        howToUse: "使い方",
+        desc1: "ドラッグで範囲選択・一括移動。",
+        desc2: "選択後、右のパネルでパート名や向きを編集。",
+        desc3: "椅子の図は、マゼンタの曲線部分が「背もたれ」です。",
+        selectedItem: "選択中のアイテム",
+        partName: "パート名 / 表示名",
+        sizeAdj: "サイズ調整 (鍵盤打楽器)",
+        width: "横幅",
+        height: "奥行き",
+        rotation: "向き",
+        angle: "角度",
+        ccw: "左回",
+        front: "正面",
+        cw: "右回",
+        deleteItem: "このアイテムを削除",
+        itemsSelected: "個のアイテムを選択中",
+        dragToMove: "ドラッグでまとめて移動できます",
+        deleteSelected: "選択アイテムをまとめて削除",
+        selectHint: "ステージ上のアイテムを\nクリックまたは\nドラッグで範囲選択してください",
+        confirmClear: "ステージをすべてクリアしますか？",
+        confirmLoad: "現在の配置を破棄して標準配置を読み込みますか？",
+        audience: "AUDIENCE (客席)",
+        chairItem: "椅子",
+        standItem: "譜面台",
+        conductorItem: "指揮台",
+        undo: "元に戻す (Undo)",
+        redo: "やり直す (Redo)"
+      },
+      en: {
+        subtitle: "Actual scale (1m=90px) layout & stage sizing",
+        loadStandard: "Load Standard",
+        clear: "Clear",
+        print: "Print / PDF",
+        tabStage: "Stage",
+        tabChairs: "Chairs/Stands",
+        tabPercussion: "Percussion",
+        stageDesc: "Set stage dimensions in 0.5m increments.",
+        frontWidth: "Front Width",
+        depth: "Depth",
+        backWidth: "Back Width",
+        showGrid: "Show 1m grid lines",
+        currentItems: "Current Stage Items",
+        chairs: "Chairs",
+        stands: "Stands",
+        unitChair: "",
+        unitStand: "",
+        howToUse: "How to use",
+        desc1: "Drag to select and move multiple items.",
+        desc2: "Edit names and rotation in the right panel.",
+        desc3: "For chairs, the magenta curve is the backrest.",
+        selectedItem: "Selected Item",
+        partName: "Part Name / Label",
+        sizeAdj: "Size Adjustment (Mallets)",
+        width: "Width",
+        height: "Depth",
+        rotation: "Rotation",
+        angle: "Angle",
+        ccw: "CCW",
+        front: "Front",
+        cw: "CW",
+        deleteItem: "Delete Item",
+        itemsSelected: "items selected",
+        dragToMove: "Drag to move them together",
+        deleteSelected: "Delete Selected Items",
+        selectHint: "Click or drag on the stage\nto select items.",
+        confirmClear: "Are you sure you want to clear the entire stage?",
+        confirmLoad: "Discard current layout and load the standard layout?",
+        audience: "AUDIENCE",
+        chairItem: "Chair",
+        standItem: "Stand",
+        conductorItem: "Conductor",
+        undo: "Undo",
+        redo: "Redo"
+      }
+    };
 
     // --- スケール設定 (1m = 90px に設定) ---
     const PPM = 90; // Pixels Per Meter
     const CHAIR_SIZE = 45; // 0.5m * 90px = 45px
 
     // --- 配置アイテムのパレット定義 ---
-    const CHAIR_STAND_PALETTE = [
-      { type: 'chair', label: '椅子', width: CHAIR_SIZE, height: CHAIR_SIZE },
-      { type: 'stand', label: '譜面台', width: CHAIR_SIZE, height: CHAIR_SIZE },
-      { type: 'conductor_stand', label: '指揮台', width: 60, height: 60 },
+    const getChairStandPalette = (lang) => [
+      { type: 'chair', label: dict[lang].chairItem, width: CHAIR_SIZE, height: CHAIR_SIZE },
+      { type: 'stand', label: dict[lang].standItem, width: CHAIR_SIZE, height: CHAIR_SIZE },
+      { type: 'conductor_stand', label: dict[lang].conductorItem, width: 60, height: 60 },
     ];
 
     const PERCUSSION_PALETTE = [
@@ -70,8 +169,8 @@
     ];
 
     // --- 英国式ブラスバンドの標準配置 (12m x 8mステージ用座標に再計算) ---
-    const STANDARD_LAYOUT = [
-      { id: '1', type: 'conductor_stand', label: '指揮台', x: 520, y: 630, rotation: 0, width: 60, height: 60 },
+    const getStandardLayout = (lang) => [
+      { id: '1', type: 'conductor_stand', label: dict[lang].conductorItem, x: 520, y: 630, rotation: 0, width: 60, height: 60 },
       // Front Row Cornets
       { id: '2', type: 'chair', label: 'Solo Cnt.', x: 400, y: 580, rotation: 180, width: 45, height: 45 },
       { id: '3', type: 'chair', label: 'Solo Cnt.', x: 400, y: 520, rotation: 180, width: 45, height: 45 },
@@ -114,7 +213,18 @@
 
     // --- メインアプリ ---
     function App() {
-      const [items, setItems] = useState([]);
+      const [lang, setLang] = useState('ja');
+      const text = dict[lang];
+
+      const [items, setItems] = useState([...getStandardLayout('ja')]);
+      const [history, setHistory] = useState([[...getStandardLayout('ja')]]);
+      const [historyStep, setHistoryStep] = useState(0);
+      
+      const itemsRef = useRef(items);
+      useEffect(() => {
+        itemsRef.current = items;
+      }, [items]);
+
       const [selectedIds, setSelectedIds] = useState([]);
       const [selectionBox, setSelectionBox] = useState(null);
       const [isPrinting, setIsPrinting] = useState(false);
@@ -126,11 +236,46 @@
       const [showGrid, setShowGrid] = useState(true);
 
       const stageRef = useRef(null);
-      const dragState = useRef({ type: null, startMouseX: 0, startMouseY: 0, items: [] });
+      const dragState = useRef({ type: null, startMouseX: 0, startMouseY: 0, items: [], hasMoved: false });
 
-      useEffect(() => {
-        setItems([...STANDARD_LAYOUT]);
-      }, []);
+      // 履歴に明示的に保存する
+      const commitChange = (newItems) => {
+        setItems(newItems);
+        const newHistory = history.slice(0, historyStep + 1);
+        newHistory.push(newItems);
+        setHistory(newHistory);
+        setHistoryStep(newHistory.length - 1);
+      };
+
+      // 現在の items 状態を履歴に保存する
+      const commitCurrentItems = () => {
+        const currentItems = itemsRef.current;
+        const lastHistory = history[historyStep];
+        if (JSON.stringify(lastHistory) !== JSON.stringify(currentItems)) {
+          const newHistory = history.slice(0, historyStep + 1);
+          newHistory.push(currentItems);
+          setHistory(newHistory);
+          setHistoryStep(newHistory.length - 1);
+        }
+      };
+
+      const handleUndo = () => {
+        if (historyStep > 0) {
+          const prevStep = historyStep - 1;
+          setHistoryStep(prevStep);
+          setItems(history[prevStep]);
+          setSelectedIds([]);
+        }
+      };
+
+      const handleRedo = () => {
+        if (historyStep < history.length - 1) {
+          const nextStep = historyStep + 1;
+          setHistoryStep(nextStep);
+          setItems(history[nextStep]);
+          setSelectedIds([]);
+        }
+      };
 
       const handleAddItem = (template) => {
         const newItem = {
@@ -140,20 +285,21 @@
           y: (stageDepth * PPM) / 2 - 20,
           rotation: 0,
         };
-        setItems([...items, newItem]);
+        const newItems = [...itemsRef.current, newItem];
+        commitChange(newItems);
         setSelectedIds([newItem.id]);
       };
 
       const handleClearStage = () => {
-        if (window.confirm('ステージをすべてクリアしますか？')) {
-          setItems([]);
+        if (window.confirm(text.confirmClear)) {
+          commitChange([]);
           setSelectedIds([]);
         }
       };
 
       const handleLoadStandard = () => {
-        if (items.length === 0 || window.confirm('現在の配置を破棄して標準配置を読み込みますか？')) {
-          setItems([...STANDARD_LAYOUT]);
+        if (itemsRef.current.length === 0 || window.confirm(text.confirmLoad)) {
+          commitChange([...getStandardLayout(lang)]);
           setStageFrontWidth(12.0);
           setStageBackWidth(8.0);
           setStageDepth(8.0);
@@ -182,7 +328,7 @@
         }
 
         const coords = getMouseCoords(e);
-        const dragItems = items
+        const dragItems = itemsRef.current
           .filter(i => newSelectedIds.includes(i.id))
           .map(i => ({ id: i.id, startX: i.x, startY: i.y }));
 
@@ -190,7 +336,8 @@
           type: 'item',
           startMouseX: coords.x,
           startMouseY: coords.y,
-          items: dragItems
+          items: dragItems,
+          hasMoved: false
         };
       };
 
@@ -207,7 +354,8 @@
           type: 'selection',
           startMouseX: coords.x,
           startMouseY: coords.y,
-          items: []
+          items: [],
+          hasMoved: false
         };
         setSelectionBox({ x: coords.x, y: coords.y, w: 0, h: 0 });
       };
@@ -217,6 +365,7 @@
         const coords = getMouseCoords(e);
 
         if (dragState.current.type === 'item') {
+          dragState.current.hasMoved = true;
           // アイテムの移動
           const deltaX = coords.x - dragState.current.startMouseX;
           const deltaY = coords.y - dragState.current.startMouseY;
@@ -241,7 +390,7 @@
           
           setSelectionBox({ x, y, w, h });
           
-          const newlySelected = items.filter(item => {
+          const newlySelected = itemsRef.current.filter(item => {
             const cx = item.x + item.width / 2;
             const cy = item.y + item.height / 2;
             return cx >= x && cx <= x + w && cy >= y && cy <= y + h;
@@ -252,22 +401,29 @@
       };
 
       const stopDrag = () => {
-        dragState.current = { type: null, startMouseX: 0, startMouseY: 0, items: [] };
+        if (dragState.current.type === 'item' && dragState.current.hasMoved) {
+          commitCurrentItems();
+        }
+        dragState.current = { type: null, startMouseX: 0, startMouseY: 0, items: [], hasMoved: false };
         setSelectionBox(null);
       };
 
-      const updateSelectedItem = (key, value) => {
+      const updateSelectedItem = (key, value, shouldCommit = false) => {
         if (selectedIds.length === 1) {
-          setItems((prev) =>
-            prev.map((item) =>
-              item.id === selectedIds[0] ? { ...item, [key]: value } : item
-            )
+          const newItems = itemsRef.current.map((item) =>
+            item.id === selectedIds[0] ? { ...item, [key]: value } : item
           );
+          if (shouldCommit) {
+            commitChange(newItems);
+          } else {
+            setItems(newItems);
+          }
         }
       };
 
       const deleteSelectedItems = () => {
-        setItems((prev) => prev.filter((item) => !selectedIds.includes(item.id)));
+        const newItems = itemsRef.current.filter((item) => !selectedIds.includes(item.id));
+        commitChange(newItems);
         setSelectedIds([]);
       };
 
@@ -302,29 +458,49 @@
                   <Move className="w-5 h-5" />
                   SET-HERE for Brass Band
                 </h1>
-                <p className="text-xs text-slate-300 mt-1">実寸スケール(1m=90px)での配置・ステージサイズ調整</p>
+                <p className="text-xs text-slate-300 mt-1">{text.subtitle}</p>
               </div>
               <div className="flex gap-3">
+                {/* 言語切り替えボタン */}
+                <button
+                  onClick={() => setLang(lang === 'ja' ? 'en' : 'ja')}
+                  className="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm font-medium transition flex items-center gap-2 border border-slate-600"
+                >
+                  <Globe className="w-4 h-4" />
+                  {lang === 'ja' ? 'English' : '日本語'}
+                </button>
+
+                {/* Undo / Redo ボタン群 */}
+                <div className="flex bg-slate-700 rounded overflow-hidden border border-slate-600 shadow-sm">
+                  <button onClick={handleUndo} disabled={historyStep === 0} className={`px-3 py-2 flex items-center justify-center transition ${historyStep === 0 ? 'text-slate-500 cursor-not-allowed bg-slate-800' : 'text-white hover:bg-slate-600'}`} title={text.undo}>
+                    <UndoIcon className="w-4 h-4" />
+                  </button>
+                  <div className="w-px bg-slate-600"></div>
+                  <button onClick={handleRedo} disabled={historyStep === history.length - 1} className={`px-3 py-2 flex items-center justify-center transition ${historyStep === history.length - 1 ? 'text-slate-500 cursor-not-allowed bg-slate-800' : 'text-white hover:bg-slate-600'}`} title={text.redo}>
+                    <RedoIcon className="w-4 h-4" />
+                  </button>
+                </div>
+
                 <button
                   onClick={handleLoadStandard}
-                  className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-medium transition flex items-center gap-2"
+                  className="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-medium transition flex items-center gap-2 whitespace-nowrap"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  標準配置をロード
+                  {text.loadStandard}
                 </button>
                 <button
                   onClick={handleClearStage}
                   className="px-3 py-2 bg-red-600 hover:bg-red-500 rounded text-sm font-medium transition flex items-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
-                  クリア
+                  {text.clear}
                 </button>
                 <button
                   onClick={handlePrint}
-                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded text-sm font-medium transition flex items-center gap-2"
+                  className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded text-sm font-medium transition flex items-center gap-2 whitespace-nowrap"
                 >
                   <Printer className="w-4 h-4" />
-                  印刷 / PDF保存
+                  {text.print}
                 </button>
               </div>
             </header>
@@ -337,31 +513,31 @@
             {!isPrinting && (
               <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 shadow-sm z-10 overflow-hidden">
                 <div className="flex border-b border-gray-200 shrink-0">
-                  <button onClick={() => setActiveTab('stage')} className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === 'stage' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}>ステージ</button>
-                  <button onClick={() => setActiveTab('chairs')} className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === 'chairs' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}>椅子/譜面台</button>
-                  <button onClick={() => setActiveTab('percussion')} className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === 'percussion' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}>打楽器</button>
+                  <button onClick={() => setActiveTab('stage')} className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === 'stage' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}>{text.tabStage}</button>
+                  <button onClick={() => setActiveTab('chairs')} className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === 'chairs' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}>{text.tabChairs}</button>
+                  <button onClick={() => setActiveTab('percussion')} className={`flex-1 py-3 text-[11px] font-bold transition-colors ${activeTab === 'percussion' ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50/50' : 'text-gray-500 hover:bg-gray-50'}`}>{text.tabPercussion}</button>
                 </div>
 
                 <div className="p-4 flex-1 overflow-y-auto flex flex-col gap-4">
                   {activeTab === 'stage' && (
                     <div className="space-y-4">
-                      <p className="text-xs text-gray-500 mb-2">ステージの広さを0.5m単位で設定できます。</p>
+                      <p className="text-xs text-gray-500 mb-2">{text.stageDesc}</p>
                       <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">間口 (手前の幅)</label>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">{text.frontWidth}</label>
                         <div className="flex items-center gap-2">
                           <input type="number" step="0.5" min="2" value={stageFrontWidth} onChange={e => setStageFrontWidth(parseFloat(e.target.value) || 0)} className="w-20 border border-gray-300 rounded px-2 py-1 text-sm focus:ring-blue-500" />
                           <span className="text-xs text-gray-500">m</span>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">奥行き</label>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">{text.depth}</label>
                         <div className="flex items-center gap-2">
                           <input type="number" step="0.5" min="2" value={stageDepth} onChange={e => setStageDepth(parseFloat(e.target.value) || 0)} className="w-20 border border-gray-300 rounded px-2 py-1 text-sm focus:ring-blue-500" />
                           <span className="text-xs text-gray-500">m</span>
                         </div>
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-gray-700 mb-1">背面幅</label>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">{text.backWidth}</label>
                         <div className="flex items-center gap-2">
                           <input type="number" step="0.5" min="2" value={stageBackWidth} onChange={e => setStageBackWidth(parseFloat(e.target.value) || 0)} className="w-20 border border-gray-300 rounded px-2 py-1 text-sm focus:ring-blue-500" />
                           <span className="text-xs text-gray-500">m</span>
@@ -370,7 +546,7 @@
                       <div className="pt-4 border-t border-gray-200 mt-2">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                          <span className="text-xs font-bold text-gray-700">1m単位のグリッド線を表示</span>
+                          <span className="text-xs font-bold text-gray-700">{text.showGrid}</span>
                         </label>
                       </div>
                     </div>
@@ -379,7 +555,7 @@
                   {activeTab === 'chairs' && (
                     <>
                       <div className="grid grid-cols-2 gap-2">
-                        {CHAIR_STAND_PALETTE.map((template, idx) => (
+                        {getChairStandPalette(lang).map((template, idx) => (
                           <button key={idx} onClick={() => handleAddItem(template)} className="p-2 rounded text-xs font-bold shadow-sm hover:bg-gray-100 transition flex flex-col items-center justify-center text-center border border-gray-300 bg-white text-gray-700 min-h-[60px]">
                             <Plus className="w-4 h-4 mb-1 opacity-50" />
                             {template.label}
@@ -388,15 +564,15 @@
                       </div>
                       <div className="mt-2 p-3 bg-gray-50 border border-gray-200 rounded-md text-xs font-bold text-gray-700 flex flex-col gap-2">
                         <div className="flex justify-between items-center border-b border-gray-200 pb-1">
-                          <span>現在のステージ配置数</span>
+                          <span>{text.currentItems}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span>椅子</span>
-                          <span className="text-blue-600 text-sm">{items.filter(i => i.type === 'chair').length} 脚</span>
+                          <span>{text.chairs}</span>
+                          <span className="text-blue-600 text-sm">{items.filter(i => i.type === 'chair').length} {text.unitChair}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span>譜面台</span>
-                          <span className="text-blue-600 text-sm">{items.filter(i => i.type === 'stand').length} 台</span>
+                          <span>{text.stands}</span>
+                          <span className="text-blue-600 text-sm">{items.filter(i => i.type === 'stand').length} {text.unitStand}</span>
                         </div>
                       </div>
                     </>
@@ -414,11 +590,11 @@
                   )}
                   
                   <div className="mt-4 p-3 bg-blue-50 text-blue-800 rounded-md text-xs leading-relaxed border border-blue-100">
-                    <p className="font-bold mb-1 flex items-center gap-1"><Info className="w-4 h-4"/> 使い方</p>
+                    <p className="font-bold mb-1 flex items-center gap-1"><Info className="w-4 h-4"/> {text.howToUse}</p>
                     <ul className="list-disc pl-4 space-y-1">
-                      <li><strong>ドラッグ</strong>で範囲選択・一括移動。</li>
-                      <li>選択後、右のパネルでパート名や向きを編集。</li>
-                      <li>椅子の図は、マゼンタの曲線部分が「背もたれ」です。</li>
+                      <li>{text.desc1}</li>
+                      <li>{text.desc2}</li>
+                      <li>{text.desc3}</li>
                     </ul>
                   </div>
                 </div>
@@ -466,7 +642,7 @@
                 </svg>
 
                 <div className="absolute bottom-0 w-full text-center py-2 text-gray-400 font-bold tracking-widest select-none z-10" style={{ left: `${bottomLeftPct}%`, width: `${bottomRightPct - bottomLeftPct}%` }}>
-                  AUDIENCE (客席)
+                  {text.audience}
                 </div>
 
                 {/* 範囲選択ボックスの描画 */}
@@ -693,7 +869,7 @@
               <aside className="w-72 bg-white border-l border-gray-200 p-5 flex flex-col gap-6 shrink-0 shadow-sm z-10 overflow-y-auto">
                 <div>
                   <h2 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider border-b pb-2">
-                    選択中のアイテム
+                    {text.selectedItem}
                   </h2>
                   
                   {selectedIds.length === 1 ? (() => {
@@ -702,40 +878,40 @@
                     return (
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-xs font-bold text-gray-700 mb-1">パート名 / 表示名</label>
-                          <input type="text" value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                          <label className="block text-xs font-bold text-gray-700 mb-1">{text.partName}</label>
+                          <input type="text" value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} onBlur={commitCurrentItems} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
 
                         {selectedItem.type === 'mallet' && (
                           <div className="pt-2 border-t border-gray-100">
-                            <h3 className="text-[11px] font-bold text-blue-600 mb-2">サイズ調整 (鍵盤打楽器)</h3>
+                            <h3 className="text-[11px] font-bold text-blue-600 mb-2">{text.sizeAdj}</h3>
                             <div className="space-y-3 bg-blue-50/50 p-2 rounded border border-blue-100">
                               <div>
-                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>横幅</span><span>{selectedItem.width}px</span></div>
-                                <input type="range" min="40" max="150" step="5" value={selectedItem.width} onChange={(e) => updateSelectedItem('width', parseInt(e.target.value))} className="w-full accent-blue-500" />
+                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.width}</span><span>{selectedItem.width}px</span></div>
+                                <input type="range" min="40" max="150" step="5" value={selectedItem.width} onChange={(e) => updateSelectedItem('width', parseInt(e.target.value))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full accent-blue-500" />
                               </div>
                               <div>
-                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>奥行き</span><span>{selectedItem.height}px</span></div>
-                                <input type="range" min="15" max="80" step="5" value={selectedItem.height} onChange={(e) => updateSelectedItem('height', parseInt(e.target.value))} className="w-full accent-blue-500" />
+                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.height}</span><span>{selectedItem.height}px</span></div>
+                                <input type="range" min="15" max="80" step="5" value={selectedItem.height} onChange={(e) => updateSelectedItem('height', parseInt(e.target.value))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full accent-blue-500" />
                               </div>
                             </div>
                           </div>
                         )}
 
                         <div>
-                          <div className="flex justify-between mb-1"><label className="block text-xs font-bold text-gray-700">向き (角度: {selectedItem.rotation}°)</label></div>
-                          <input type="range" min="-180" max="180" step="5" value={selectedItem.rotation} onChange={(e) => updateSelectedItem('rotation', parseInt(e.target.value))} className="w-full" />
-                          <div className="flex justify-between text-xs text-gray-400 mt-1"><span>左回</span><span>正面</span><span>右回</span></div>
+                          <div className="flex justify-between mb-1"><label className="block text-xs font-bold text-gray-700">{text.rotation} ({text.angle}: {selectedItem.rotation}°)</label></div>
+                          <input type="range" min="-180" max="180" step="5" value={selectedItem.rotation} onChange={(e) => updateSelectedItem('rotation', parseInt(e.target.value))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full" />
+                          <div className="flex justify-between text-xs text-gray-400 mt-1"><span>{text.ccw}</span><span>{text.front}</span><span>{text.cw}</span></div>
                           <div className="grid grid-cols-4 gap-1 mt-2">
                             {[-90, 0, 90, 180].map(deg => (
-                              <button key={deg} onClick={() => updateSelectedItem('rotation', deg)} className="px-1 py-1 bg-gray-100 hover:bg-gray-200 rounded text-[10px] text-gray-600">{deg}°</button>
+                              <button key={deg} onClick={() => updateSelectedItem('rotation', deg, true)} className="px-1 py-1 bg-gray-100 hover:bg-gray-200 rounded text-[10px] text-gray-600">{deg}°</button>
                             ))}
                           </div>
                         </div>
 
                         <div className="pt-4 border-t border-gray-100">
                           <button onClick={deleteSelectedItems} className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded text-sm font-bold flex items-center justify-center gap-2 transition">
-                            <Trash2 className="w-4 h-4" /> このアイテムを削除
+                            <Trash2 className="w-4 h-4" /> {text.deleteItem}
                           </button>
                         </div>
                       </div>
@@ -744,18 +920,18 @@
                     <div className="space-y-4">
                       <div className="text-center py-6 bg-blue-50 rounded border border-blue-100">
                         <span className="text-2xl font-bold text-blue-600">{selectedIds.length}</span>
-                        <span className="text-sm text-blue-800 ml-1">個のアイテムを選択中</span>
-                        <p className="text-xs text-blue-500 mt-1">ドラッグでまとめて移動できます</p>
+                        <span className="text-sm text-blue-800 ml-1">{text.itemsSelected}</span>
+                        <p className="text-xs text-blue-500 mt-1">{text.dragToMove}</p>
                       </div>
                       <div className="pt-4 border-t border-gray-100">
                         <button onClick={deleteSelectedItems} className="w-full px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded text-sm font-bold flex items-center justify-center gap-2 transition">
-                          <Trash2 className="w-4 h-4" /> 選択アイテムをまとめて削除
+                          <Trash2 className="w-4 h-4" /> {text.deleteSelected}
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="text-sm text-gray-400 text-center py-10 bg-gray-50 rounded border border-dashed border-gray-200">
-                      ステージ上のアイテムを<br/>クリックまたは<br/>ドラッグで範囲選択してください
+                      {text.selectHint.split('\n').map((line, i) => <React.Fragment key={i}>{line}<br/></React.Fragment>)}
                     </div>
                   )}
                 </div>
