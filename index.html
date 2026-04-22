@@ -88,7 +88,9 @@
         standItem: "譜面台",
         conductorItem: "指揮台",
         undo: "元に戻す (Undo)",
-        redo: "やり直す (Redo)"
+        redo: "やり直す (Redo)",
+        otherItem: "その他 (可変)",
+        sizeAdjOther: "サイズ調整 (その他・図形)"
       },
       en: {
         subtitle: "Actual scale (1m=90px) layout & stage sizing",
@@ -134,7 +136,9 @@
         standItem: "Stand",
         conductorItem: "Conductor",
         undo: "Undo",
-        redo: "Redo"
+        redo: "Redo",
+        otherItem: "Other (Custom)",
+        sizeAdjOther: "Size Adjustment (Other)"
       }
     };
 
@@ -149,7 +153,7 @@
       { type: 'conductor_stand', label: dict[lang].conductorItem, width: 60, height: 60 },
     ];
 
-    const PERCUSSION_PALETTE = [
+    const getPercussionPalette = (lang) => [
       { type: 'timpani', inch: '32', label: 'Timp 32"', width: 60, height: 60 },
       { type: 'timpani', inch: '29', label: 'Timp 29"', width: 55, height: 55 },
       { type: 'timpani', inch: '26', label: 'Timp 26"', width: 50, height: 50 },
@@ -166,6 +170,7 @@
       { type: 'bongo', label: 'Bongos', width: 45, height: 45 },
       { type: 'conga', label: 'Congas', width: 45, height: 45 },
       { type: 'concert_toms', label: 'Concert Toms', width: 45, height: 45 },
+      { type: 'other', label: dict[lang].otherItem, width: 90, height: 90 },
     ];
 
     // --- 英国式ブラスバンドの標準配置 (12m x 8mステージ用座標に再計算) ---
@@ -580,7 +585,7 @@
 
                   {activeTab === 'percussion' && (
                     <div className="grid grid-cols-2 gap-2">
-                      {PERCUSSION_PALETTE.map((template, idx) => (
+                      {getPercussionPalette(lang).map((template, idx) => (
                         <button key={idx} onClick={() => handleAddItem(template)} className="p-2 rounded text-[11px] font-bold shadow-sm hover:bg-gray-100 transition flex flex-col items-center justify-center text-center border border-gray-300 bg-white text-gray-700 min-h-[60px]">
                           <Plus className="w-4 h-4 mb-1 opacity-50" />
                           {template.label}
@@ -849,13 +854,18 @@
                         </g>
                       </svg>
                     )}
+                    {item.type === 'other' && (
+                      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 w-full h-full opacity-90">
+                        <rect x="2" y="2" width="96" height="96" fill="white" stroke="#666" strokeWidth="4" strokeLinejoin="round" />
+                      </svg>
+                    )}
 
                     {item.type !== 'stand' && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-0.5" style={{ transform: `rotate(${-item.rotation}deg)` }}>
                         {item.type === 'timpani' ? (
                           <span className="text-gray-600 font-bold" style={{ fontSize: `${item.width * 0.3}px` }}>{item.inch}"</span>
                         ) : (
-                          <span className="text-gray-800 font-bold text-center leading-tight" style={{ fontSize: item.type === 'mallet' ? `${Math.max(9, item.height * 0.25)}px` : '9px', maxWidth: (item.type === 'tam_tam' || item.type === 'bass_drum' || item.type === 'side_drum' || item.type === 'bongo' || item.type === 'conga' || item.type === 'concert_toms') ? '65%' : '100%', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.label}</span>
+                          <span className="text-gray-800 font-bold text-center leading-tight" style={{ fontSize: (item.type === 'mallet' || item.type === 'other') ? `${Math.max(9, item.height * 0.25)}px` : '9px', maxWidth: (item.type === 'tam_tam' || item.type === 'bass_drum' || item.type === 'side_drum' || item.type === 'bongo' || item.type === 'conga' || item.type === 'concert_toms') ? '65%' : (item.type === 'other' ? '90%' : '100%'), wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>{item.label}</span>
                         )}
                       </div>
                     )}
@@ -882,9 +892,9 @@
                           <input type="text" value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} onBlur={commitCurrentItems} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
                         </div>
 
-                        {selectedItem.type === 'mallet' && (
+                        {(selectedItem.type === 'mallet' || selectedItem.type === 'other') && (
                           <div className="pt-2 border-t border-gray-100">
-                            <h3 className="text-[11px] font-bold text-blue-600 mb-2">{text.sizeAdj}</h3>
+                            <h3 className="text-[11px] font-bold text-blue-600 mb-2">{selectedItem.type === 'mallet' ? text.sizeAdj : text.sizeAdjOther}</h3>
                             <div className="space-y-3 bg-blue-50/50 p-2 rounded border border-blue-100">
                               <div>
                                 <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.width}</span><span>{selectedItem.width}px</span></div>
