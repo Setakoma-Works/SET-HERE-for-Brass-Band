@@ -56,7 +56,9 @@
         frontWidth: "間口 (手前の幅)",
         depth: "奥行き",
         backWidth: "背面幅",
-        showGrid: "1m単位のグリッド線を表示",
+        showGrid: "グリッド線を表示",
+        grid1m: "1m間隔",
+        grid1_8m: "1.8m間隔 (6尺)",
         currentItems: "現在のステージ配置数",
         chairs: "椅子",
         stands: "譜面台",
@@ -67,7 +69,7 @@
         desc2: "選択後、右のパネルでパート名や向きを編集。",
         desc3: "椅子の図は、マゼンタの曲線部分が「背もたれ」です。",
         selectedItem: "選択中のアイテム",
-        partName: "パート名 / 表示名",
+        partName: "パート名 / 表示名 (メモ)",
         sizeAdj: "サイズ調整 (鍵盤打楽器)",
         width: "横幅",
         height: "奥行き",
@@ -90,7 +92,9 @@
         undo: "元に戻す (Undo)",
         redo: "やり直す (Redo)",
         otherItem: "その他 (可変)",
-        sizeAdjOther: "サイズ調整 (その他・図形)"
+        textItem: "メモ (文字入力)",
+        sizeAdjOther: "サイズ調整 (その他 / メモ)",
+        fontSize: "文字サイズ"
       },
       en: {
         subtitle: "Actual scale (1m=90px) layout & stage sizing",
@@ -104,7 +108,9 @@
         frontWidth: "Front Width",
         depth: "Depth",
         backWidth: "Back Width",
-        showGrid: "Show 1m grid lines",
+        showGrid: "Show grid lines",
+        grid1m: "1m interval",
+        grid1_8m: "1.8m interval",
         currentItems: "Current Stage Items",
         chairs: "Chairs",
         stands: "Stands",
@@ -115,7 +121,7 @@
         desc2: "Edit names and rotation in the right panel.",
         desc3: "For chairs, the magenta curve is the backrest.",
         selectedItem: "Selected Item",
-        partName: "Part Name / Label",
+        partName: "Part Name / Text Note",
         sizeAdj: "Size Adjustment (Mallets)",
         width: "Width",
         height: "Depth",
@@ -138,18 +144,25 @@
         undo: "Undo",
         redo: "Redo",
         otherItem: "Other (Custom)",
-        sizeAdjOther: "Size Adjustment (Other)"
+        textItem: "Text Note",
+        sizeAdjOther: "Size Adjustment (Other/Text)",
+        fontSize: "Font Size"
       }
     };
 
     // --- スケール設定 (1m = 90px に設定) ---
     const PPM = 90; // Pixels Per Meter
-    const CHAIR_SIZE = 45; // 0.5m * 90px = 45px
+    const CHAIR_SIZE = 45; // 0.5m * 90px = 45px (余白をなくして実寸に合わせる)
+    const STAND_SIZE = 45; // 譜面台のサイズ
+
+    // cm <-> px の変換関数
+    const pxToCm = (px) => Math.round(px / (PPM / 100)); // 1cm = 0.9px
+    const cmToPx = (cm) => Math.round(cm * (PPM / 100));
 
     // --- 配置アイテムのパレット定義 ---
     const getChairStandPalette = (lang) => [
       { type: 'chair', label: dict[lang].chairItem, width: CHAIR_SIZE, height: CHAIR_SIZE },
-      { type: 'stand', label: dict[lang].standItem, width: CHAIR_SIZE, height: CHAIR_SIZE },
+      { type: 'stand', label: dict[lang].standItem, width: STAND_SIZE, height: STAND_SIZE },
       { type: 'conductor_stand', label: dict[lang].conductorItem, width: 60, height: 60 },
     ];
 
@@ -160,6 +173,7 @@
       { type: 'timpani', inch: '23', label: 'Timp 23"', width: 45, height: 45 },
       { type: 'drums', label: 'Drums', width: 108, height: 108 },
       { type: 'mallet', label: 'Marimba', width: 110, height: 45 },
+      { type: 'mallet', label: 'Xylophone', width: 100, height: 40 }, // 英語表記に統一
       { type: 'mallet', label: 'Vibraphone', width: 85, height: 35 },
       { type: 'mallet', label: 'Glocken.', width: 60, height: 25 },
       { type: 'cymbals', label: 'Cymbals', width: 45, height: 45 },
@@ -171,9 +185,10 @@
       { type: 'conga', label: 'Congas', width: 45, height: 45 },
       { type: 'concert_toms', label: 'Concert Toms', width: 45, height: 45 },
       { type: 'other', label: dict[lang].otherItem, width: 90, height: 90 },
+      { type: 'text', label: dict[lang].textItem, width: 120, height: 40, fontSize: 16 }, // 文字入力用
     ];
 
-    // --- 英国式ブラスバンドの標準配置 (12m x 8mステージ用座標に再計算) ---
+    // --- 英国式ブラスバンドの標準配置 (12m x 8mステージ用座標に再計算 / 椅子の幅を50に更新) ---
     const getStandardLayout = (lang) => [
       { id: '1', type: 'conductor_stand', label: dict[lang].conductorItem, x: 520, y: 630, rotation: 0, width: 60, height: 60 },
       // Front Row Cornets
@@ -239,6 +254,7 @@
       const [stageBackWidth, setStageBackWidth] = useState(8.0);
       const [stageDepth, setStageDepth] = useState(8.0);
       const [showGrid, setShowGrid] = useState(true);
+      const [gridInterval, setGridInterval] = useState(90); // 90px=1m, 162px=1.8m
 
       const stageRef = useRef(null);
       const dragState = useRef({ type: null, startMouseX: 0, startMouseY: 0, items: [], hasMoved: false });
@@ -549,10 +565,22 @@
                         </div>
                       </div>
                       <div className="pt-4 border-t border-gray-200 mt-2">
-                        <label className="flex items-center gap-2 cursor-pointer">
+                        <label className="flex items-center gap-2 cursor-pointer mb-2">
                           <input type="checkbox" checked={showGrid} onChange={e => setShowGrid(e.target.checked)} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
                           <span className="text-xs font-bold text-gray-700">{text.showGrid}</span>
                         </label>
+                        {showGrid && (
+                          <div className="flex flex-col gap-2 pl-6">
+                            <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-600 font-bold">
+                              <input type="radio" name="gridInterval" value="90" checked={gridInterval === 90} onChange={() => setGridInterval(90)} className="text-blue-600 focus:ring-blue-500" />
+                              {text.grid1m}
+                            </label>
+                            <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-600 font-bold">
+                              <input type="radio" name="gridInterval" value="162" checked={gridInterval === 162} onChange={() => setGridInterval(162)} className="text-blue-600 focus:ring-blue-500" />
+                              {text.grid1_8m}
+                            </label>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -630,8 +658,9 @@
                     style={{ 
                       clipPath: clipPathValue,
                       backgroundImage: showGrid ? 'linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px)' : 'none',
-                      backgroundSize: `${PPM}px ${PPM}px`,
-                      backgroundPosition: 'center bottom',
+                      backgroundSize: `${gridInterval}px ${gridInterval}px`,
+                      // 縦のグリッド線を常にコンテナの中心に合わせる計算
+                      backgroundPosition: `calc(50% + ${gridInterval / 2}px) bottom`,
                     }}
                   ></div>
                 </div>
@@ -670,14 +699,14 @@
                   >
                     {item.type === 'chair' && (
                       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full opacity-90" fill="none" stroke="#FF00FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="20" y1="15" x2="20" y2="85" />
-                        <line x1="20" y1="15" x2="85" y2="15" />
-                        <line x1="20" y1="85" x2="85" y2="85" />
-                        <line x1="65" y1="15" x2="65" y2="85" />
-                        <path d="M65 15 Q 70 50 65 85" />
-                        <path d="M72 15 Q 78 50 72 85" />
-                        <path d="M78 15 Q 85 50 78 85" />
-                        <line x1="85" y1="15" x2="85" y2="85" />
+                        <line x1="5" y1="5" x2="5" y2="95" />
+                        <line x1="5" y1="5" x2="95" y2="5" />
+                        <line x1="5" y1="95" x2="95" y2="95" />
+                        <line x1="68" y1="5" x2="68" y2="95" />
+                        <path d="M 68 5 Q 77 50 68 95" />
+                        <path d="M 77 5 Q 86 50 77 95" />
+                        <path d="M 86 5 Q 95 50 86 95" />
+                        <line x1="95" y1="5" x2="95" y2="95" />
                       </svg>
                     )}
                     {item.type === 'stand' && (
@@ -859,8 +888,13 @@
                         <rect x="2" y="2" width="96" height="96" fill="white" stroke="#666" strokeWidth="4" strokeLinejoin="round" />
                       </svg>
                     )}
+                    {item.type === 'text' && (
+                      <div className="absolute inset-0 flex items-center justify-center w-full h-full text-center whitespace-pre-wrap leading-tight" style={{ fontSize: `${item.fontSize || 16}px`, color: '#333', fontWeight: 'bold' }}>
+                        {item.label}
+                      </div>
+                    )}
 
-                    {item.type !== 'stand' && (
+                    {item.type !== 'stand' && item.type !== 'text' && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none p-0.5" style={{ transform: `rotate(${-item.rotation}deg)` }}>
                         {item.type === 'timpani' ? (
                           <span className="text-gray-600 font-bold" style={{ fontSize: `${item.width * 0.3}px` }}>{item.inch}"</span>
@@ -889,20 +923,36 @@
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-bold text-gray-700 mb-1">{text.partName}</label>
-                          <input type="text" value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} onBlur={commitCurrentItems} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                          {selectedItem.type === 'text' ? (
+                            <textarea value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} onBlur={commitCurrentItems} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3" />
+                          ) : (
+                            <input type="text" value={selectedItem.label} onChange={(e) => updateSelectedItem('label', e.target.value)} onBlur={commitCurrentItems} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                          )}
                         </div>
 
-                        {(selectedItem.type === 'mallet' || selectedItem.type === 'other') && (
+                        {selectedItem.type === 'text' && (
+                          <div className="pt-2 border-t border-gray-100">
+                            <h3 className="text-[11px] font-bold text-blue-600 mb-2">{text.fontSize}</h3>
+                            <div className="space-y-3 bg-blue-50/50 p-2 rounded border border-blue-100">
+                              <div>
+                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.fontSize}</span><span>{selectedItem.fontSize || 16}px</span></div>
+                                <input type="range" min="10" max="100" step="1" value={selectedItem.fontSize || 16} onChange={(e) => updateSelectedItem('fontSize', parseInt(e.target.value))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full accent-blue-500" />
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {(selectedItem.type === 'mallet' || selectedItem.type === 'other' || selectedItem.type === 'text') && (
                           <div className="pt-2 border-t border-gray-100">
                             <h3 className="text-[11px] font-bold text-blue-600 mb-2">{selectedItem.type === 'mallet' ? text.sizeAdj : text.sizeAdjOther}</h3>
                             <div className="space-y-3 bg-blue-50/50 p-2 rounded border border-blue-100">
                               <div>
-                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.width}</span><span>{selectedItem.width}px</span></div>
-                                <input type="range" min="40" max="150" step="5" value={selectedItem.width} onChange={(e) => updateSelectedItem('width', parseInt(e.target.value))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full accent-blue-500" />
+                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.width}</span><span>{pxToCm(selectedItem.width)} cm</span></div>
+                                <input type="range" min="20" max="400" step="5" value={pxToCm(selectedItem.width)} onChange={(e) => updateSelectedItem('width', cmToPx(parseInt(e.target.value)))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full accent-blue-500" />
                               </div>
                               <div>
-                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.height}</span><span>{selectedItem.height}px</span></div>
-                                <input type="range" min="15" max="80" step="5" value={selectedItem.height} onChange={(e) => updateSelectedItem('height', parseInt(e.target.value))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full accent-blue-500" />
+                                <div className="flex justify-between text-[10px] text-gray-600 mb-1"><span>{text.height}</span><span>{pxToCm(selectedItem.height)} cm</span></div>
+                                <input type="range" min="10" max="400" step="5" value={pxToCm(selectedItem.height)} onChange={(e) => updateSelectedItem('height', cmToPx(parseInt(e.target.value)))} onMouseUp={commitCurrentItems} onTouchEnd={commitCurrentItems} className="w-full accent-blue-500" />
                               </div>
                             </div>
                           </div>
